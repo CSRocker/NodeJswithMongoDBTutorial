@@ -1,32 +1,19 @@
-var express = require('express')
-    , path = require('path')
-    , favicon = require('serve-favicon')
-    , logger = require('morgan')
-    , expressValidator = require('express-validator')
-    , cookieParser = require('cookie-parser')
-    , session = require('express-session')
-    , passport = require('passport')
-    , localStrategy = require('passport-local').Strategy
-    , bodyParser = require('body-parser')
-    , multer = require('multer')
-    , flash = require('connect-flash')
-    , mongo = require('mongodb')
-    , mongoose = require('mongoose')
-    , db = mongoose.connection;
-
+var express = require('express');
+var path = require('path');
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
 
-// view HTML engine setup
-app.engine('.html', require('ejs').__express);
-app.set('view engine','html');
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
-// Middlewares
-
-var upload = multer({ dest: './uploads' }); // Handle file uploads
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -34,35 +21,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(flash());                      // Flash message
-app.use(function(req,res,next){        // Express message
-  res.locals.message = require('express-messages')(req,res);
-  next();
-});
-app.use(session({             // Handle express session
-
-  secret : 'secret',  // define secret key
-  saveUninitialized : true,
-  resave : true
-}));
-app.use(passport.initialize()); // Passport
-app.use(passport.session());
-app.use(expressValidator({      // Validator
-  errorFormatter : function(parse, msg, value){
-    var namespace = parse.split('.')
-        ,root = namespace.shift()
-        , formParam = root;
-
-    while(namespace.length){
-      formParam += '[' + namespace.shift() + ']';
-    }
-    return{
-        param : formParam,
-        msg : msg,
-        value : value
-  };
-  }
-}));  // ./ End of Validator
 
 app.use('/', routes);
 app.use('/users', users);
@@ -97,8 +55,6 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
-
 
 
 module.exports = app;
